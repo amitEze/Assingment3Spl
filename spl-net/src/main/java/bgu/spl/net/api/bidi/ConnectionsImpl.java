@@ -1,10 +1,9 @@
-package bgu.spl.net.srv;
+package bgu.spl.net.api.bidi;
 import java.util.concurrent.ConcurrentHashMap;
-
-import bgu.spl.net.api.bidi.Connections;
+import bgu.spl.net.srv.ConnectionHandler;
 
 public class ConnectionsImpl<T> implements Connections<T> {
-    ConcurrentHashMap<Integer,ConnectionHandler> clientsHandlers=new ConcurrentHashMap<Integer,ConnectionHandler>();
+    ConcurrentHashMap<Integer, ConnectionHandler> clientsHandlers=new ConcurrentHashMap<Integer,ConnectionHandler>();
     @Override
     public boolean send(int connectionId, T msg) {
         if(clientsHandlers.get(connectionId)!=null){
