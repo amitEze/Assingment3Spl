@@ -15,10 +15,10 @@ public class HabetnikimStreetCode implements MessageEncoderDecoder<String> {
         if(nextByte==';') {
             opcode=bytesToShort(bytes);
             msgData = new String(bytes, 2, len);
-            return opcode+msgData;
+            return opcode+'\0'+msgData;
         }
         pushByte(nextByte);
-        return opcode+'\0'+msgData;
+        return null;
     }
 
     @Override

@@ -1,11 +1,22 @@
 package bgu.spl.net.impl.habetnikim;
 
 import bgu.spl.net.api.MessagingProtocol;
+import bgu.spl.net.api.bidi.BidiMessagingProtocol;
+import bgu.spl.net.api.bidi.Connections;
+import bgu.spl.net.api.bidi.ConnectionsImpl;
 
-public class MoaBetProtcol implements MessagingProtocol {
+public class MoaBetProtcol implements BidiMessagingProtocol {
+    Connections betShlita;
+    int clientId;
     @Override
-    public Object process(Object msg) {
-        String opCode=minCutMaxFlow((String)msg,1);
+    public void start(int connectionId, Connections connections) {
+        betShlita=connections;
+        clientId=connectionId;
+    }
+
+    @Override
+    public void process(Object message) {
+        String opCode=minCutMaxFlow((String)message,1);
         switch (opCode){
             case "1":
             case "2":
@@ -17,7 +28,6 @@ public class MoaBetProtcol implements MessagingProtocol {
             case "8":
             case "12":
         }
-        return null;
     }
 
     @Override
