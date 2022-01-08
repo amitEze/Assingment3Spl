@@ -1,16 +1,13 @@
 package bgu.spl.net;
 
+import java.nio.charset.StandardCharsets;
+
 public class hathatshtaim {
     public static void main(String[] args){
-        byte[] bytes = new byte[1 << 10];
-        short s=5;
-        String result="\0";
-        bytes=(result+';').getBytes();
-        for(int i=0;i<1;i++)
-            System.out.println(bytes[i]);
-        String curious = new String(bytes,0,1);
-        if(curious.charAt(0)=='\0')
-            System.out.println("true");
+        byte []byt ={0};
+        String result=new String(byt,0,1);
+        byt=result.getBytes(StandardCharsets.UTF_8);
+        System.out.println(byt[0]);
     }
     public static byte[] shortToBytes(short num)
     {

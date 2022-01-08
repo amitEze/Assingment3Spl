@@ -2,7 +2,6 @@ package bgu.spl.net.impl.habetnikim;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
 import bgu.spl.net.api.bidi.Connections;
 import bgu.spl.net.srv.ConnectionHandler;
 
@@ -42,7 +41,7 @@ public class ConnectionsImpl<T> implements Connections<T> {
         return users;
     }
 
-    public ConnectionHandler getChandler(int id){
+    public ConnectionHandler getCHandler(int id){
         return clientsHandlers.get(id);
     }
 }

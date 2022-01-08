@@ -2,8 +2,7 @@ package bgu.spl.net.impl.habetnikim;
 
 import bgu.spl.net.api.bidi.BidiMessagingProtocol;
 import bgu.spl.net.api.bidi.Connections;
-import bgu.spl.net.srv.ConnectionHandler;
-
+//import bgu.spl.net.srv.ConnectionHandler;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,8 +10,11 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class MoaBetProtcol implements BidiMessagingProtocol {
-    ConnectionsImpl betShlita;
-    int clientId;
+    ConnectionsImpl betShlita=null;
+    int clientId=-1;
+    String[] bannedWords= {"flugelhorn","cusmerots","reshonletsion","fuckshit","cluster","databatch","ronenperets"};
+
+    public MoaBetProtcol(){}
     @Override
     public void start(int connectionId, Connections connections) {
         betShlita=(ConnectionsImpl) connections;
@@ -24,45 +26,65 @@ public class MoaBetProtcol implements BidiMessagingProtocol {
         String opCode=minCutMaxFlow((String)message,1);
         switch (opCode){
             case "1":
-                String userName = minCutMaxFlow((String)message,2);
-                String passWord = minCutMaxFlow((String)message,3);
-                String bDay = minCutMaxFlow((String)message,4);
-                Betnik user = new Betnik(userName,passWord,bDay); //might need to calculate age here
+                String userName=minCutMaxFlow((String)message,2);
+                String passWord=minCutMaxFlow((String)message,3);
+                String bDay=minCutMaxFlow((String)message,4);
+                Betnik user=new Betnik(userName,passWord,bDay);//might need to calculate age here
                 betShlita.addUser(user);
-                break;
+                String ackMsg=shorToString(10)+shorToString(1);
+                betShlita.send(clientId,ackMsg);
             case "2":
-                String uName = minCutMaxFlow((String)message,2);
-                String pWord = minCutMaxFlow((String)message,3);
-                String captcha = minCutMaxFlow((String)message,4); //should enter zero after captcha
+                String uName=minCutMaxFlow((String)message,2);
+                String pWord=minCutMaxFlow((String)message,3);
+                String captcha=((String) message).substring(((String) message).length()-2,((String) message).length()-1);
                 if(captcha.getBytes(StandardCharsets.UTF_8)[0]==1){
                     Queue<Betnik> tryLog=betShlita.getUsers();
-                    Boolean logged=false;
-                    for(Betnik b: tryLog){
-                        if(b.getUserName()==uName)
-                        {
-                            if(b.getPassWord()==pWord){
-                                if(b.getcHandler()==null){
-                                    b.setHandler(betShlita.getChandler(clientId));
+                    boolean logged=false;
+                    for(Betnik b : tryLog){
+                        if(b.getUserName().equals(uName)) {
+                            if (b.getPassWord().equals(pWord)) {
+                                if(b.getCHandler()==null) {
+                                    b.setHandler(betShlita.getCHandler(clientId));
+                                    b.setConnectionId(clientId);
                                     logged=true;
                                 }
                             }
                         }
                     }
-                    if(logged==false){
-                        //need to write error message
+                    if(logged){
+                        //need to write error************
                     }
                     else{
-                        //need to write ack message
+                        String ackRes=shorToString(10)+shorToString(2);
+                        betShlita.send(clientId,ackRes);
+                    //need to push all posts and PM that the user missed************
+                        Queue<String> toPush=getUser().getUnseeNotifications();
+                        for(String s: toPush){
+                            betShlita.send(clientId,s);
+                            toPush.remove(s);
+                        }
+                        }
+                    }
+            case "3":
+                Queue<Betnik> users = betShlita.getUsers();
+                boolean loggedOut=false;
+                for(Betnik b : users) {
+                    if (betShlita.getCHandler(clientId) == b.getCHandler()){
+                        b.setHandler(null);
+                        loggedOut=true;
                     }
                 }
-
-            case "3":
-
-
+                if(loggedOut){
+                    //need to write error*********
+                }
+                else{
+                    //need to send ACK response**************
+                    //should terminate?!
+                }
             case "4":
-                String follow = ((String) message).substring(2,4);
-                String toFollow = (String)((String) message).substring(4,((String) message).length());
-                if(follow.getBytes(StandardCharsets.UTF_8)[0]==0)
+                String follow = minCutMaxFlow((String) message,2).substring(0,1);
+                String toFollow = minCutMaxFlow((String)message,2).substring(1);
+                if(follow.equals("\0"))
                 {
                     //case follow
                     Betnik userMe = getUser();
@@ -96,7 +118,7 @@ public class MoaBetProtcol implements BidiMessagingProtocol {
                     //case unfollow
                     Betnik userMe = getUser();
                     Betnik ugly = getUserByName(toFollow);
-                    if(userMe!=null && ugly!=null && userMe.getcHandler()!=null){
+                    if(userMe!=null && ugly!=null && userMe.getCHandler()!=null){
                         Boolean isFollowed = false;
                         ConcurrentLinkedQueue<Betnik> iFollow = userMe.getFollowing();
                         for(Betnik b: iFollow) {
@@ -146,9 +168,49 @@ public class MoaBetProtcol implements BidiMessagingProtocol {
 
                 }
             case "6":
+                String dest=minCutMaxFlow((String) message,2);
+                String content=minCutMaxFlow((String) message,3);
+                String timing= minCutMaxFlow((String)message,4);
+                if(getUser()!=null){
+                    if(getUserByName(dest)!=null){
+                        if(getUser().getFollowing().contains(getUserByName(dest))){
+                            for(String w:bannedWords){
+                                if(content.contains(w)){
+                                    content.replaceAll(w,"<filtered>");
+                                }
+                            }
+                            getUser().addPM(content);
+                            if(getUserByName(dest).getCHandler()!=null){//connected so use send to print on his screed (use send func)
+                                betShlita.send(getUserByName(dest).getConnectionId(),content);
+                            } else{
+                                getUserByName(dest).addNotification(content);
+                            }
+                        }
+                        else{
+                            //should send error because the sender not following the receiver
+                        }
+                    }
+                    else{
+                        //should send error because destination user isnt registered
+                    }
+                }
+                else{
+                    //should send error because the sender is not logged in
+                }
             case "7":
             case "8":
             case "12":
+                String stolker=minCutMaxFlow((String) message,2);
+                if(getUserByName(stolker)!=null){
+                    Betnik beniSela= getUserByName(stolker);
+                    beniSela.addBlocker(getUser());
+                    getUser().getFollowers().remove(beniSela);
+                    getUser().getFollowers().remove(beniSela);
+                    //send ACK now
+                }
+                else{
+                    //send error because the user you want to block dosent exists
+                }
         }
     }
 
@@ -177,7 +239,7 @@ public class MoaBetProtcol implements BidiMessagingProtocol {
         Queue<Betnik> users=betShlita.getUsers();
         for(Betnik b: users)
         {
-            if(b.getcHandler()==betShlita.getChandler(clientId))
+            if(b.getCHandler()==betShlita.getCHandler(clientId))
                 return b;
         }
         return null; //not connected not registered
