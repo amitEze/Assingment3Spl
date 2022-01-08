@@ -58,7 +58,7 @@ public class MoaBetProtcol implements BidiMessagingProtocol {
                         }
                     }
                     if(logged){
-                        //need to write error************
+                        betShlita.send(clientId,error);
                     }
                     else{
               //          String ackRes=shorToString(10)+shorToString(2);/// do not need that either
@@ -81,10 +81,10 @@ public class MoaBetProtcol implements BidiMessagingProtocol {
                     }
                 }
                 if(loggedOut){
-                    //need to write error*********
+                    betShlita.send(clientId,error);
                 }
                 else{
-                    //need to send ACK response**************
+                    betShlita.send(clientId,ack);
                     //should terminate?!
                 }
             case "4":
@@ -121,7 +121,6 @@ public class MoaBetProtcol implements BidiMessagingProtocol {
                 else
                 {
                     //case unfollow
-//                    Betnik userMe = getUser();
                     Betnik ugly = getUserByName(toFollow);
                     if(userMe!=null && ugly!=null && userMe.getCHandler()!=null){
                         Boolean isFollowed = false;
@@ -214,15 +213,15 @@ public class MoaBetProtcol implements BidiMessagingProtocol {
                             }
                         }
                         else{
-                            //should send error because the sender not following the receiver
+                            betShlita.send(clientId,error);
                         }
                     }
                     else{
-                        //should send error because destination user isnt registered
+                        betShlita.send(clientId,error);
                     }
                 }
                 else{
-                    //should send error because the sender is not logged in
+                    betShlita.send(clientId,error);
                 }
             case "7":
                 //logstat
@@ -233,7 +232,7 @@ public class MoaBetProtcol implements BidiMessagingProtocol {
                     for(Betnik b: loggedInUsers){
                         if(!blockedBy.contains(b)){
                             String bStat = "";
-                          bStat = bStat+b.getAge();
+                            bStat = bStat+b.getAge();
                             bStat = " " + bStat + shorToString((short) b.getPosts().size());
                             bStat = " " + bStat + shorToString((short) b.getFollowers().size());
                             bStat = " " + bStat + shortToBytes((short) b.getFollowing().size());
@@ -257,7 +256,7 @@ public class MoaBetProtcol implements BidiMessagingProtocol {
                             if(userToStatus!=null && !(userMe.getBlockedBy().contains(userToStatus)) && !userToStatus.getBlockedBy().contains(userMe)){  //***** and not blocked
                                 String s = "";
                                 j=i;
-//                                s = s+ userToStatus.getAge();
+                                s = s+ userToStatus.getAge();
                                 s=" "+s+shorToString((short)userToStatus.getPosts().size());
                                 s=" "+s+shorToString((short) userToStatus.getFollowers().size());
                                 s=" "+s+shorToString((short) userToStatus.getFollowing().size());
@@ -280,10 +279,10 @@ public class MoaBetProtcol implements BidiMessagingProtocol {
                     beniSela.addBlocker(getUser());
                     getUser().getFollowers().remove(beniSela);
                     getUser().getFollowers().remove(beniSela);
-                    //send ACK now
+                    betShlita.send(clientId,ack);
                 }
                 else{
-                    //send error because the user you want to block dosent exists
+                    betShlita.send(clientId,error);
                 }
         }
     }
