@@ -29,13 +29,26 @@ public class Betnik {
         this.bDay=bDay;
     }
 
+    public void login(ConnectionHandler ch){
+        cHandler=ch;
+    }
+
     public String getUserName(){return userName;}
+
     public String getPassWord(){return passWord;}
+
     public ConnectionHandler getCHandler(){return cHandler;}
+
     public void setHandler(ConnectionHandler c){this.cHandler=c;}
+
     public ConcurrentLinkedQueue<Betnik> getFollowing(){return following;}
+
     public  ConcurrentLinkedQueue<Betnik> getFollowers(){return followers;}
+
     public ConcurrentLinkedQueue<String> getUnseeNotifications(){return unseeNotifications;}
+
+    public ConcurrentLinkedQueue<Betnik> getBlockedBy(){return BlockedBy;}
+
     public ConcurrentLinkedQueue<String> getPosts(){return posts;}
     public ConcurrentLinkedQueue<String> getPms(){return pms;}
     public void addPM(String pm){pms.add(pm);}
@@ -50,10 +63,11 @@ public class Betnik {
     public short getAge(){
         LocalDate now=LocalDate.of(2022,1,14);
         Integer year=Integer.valueOf(bDay.substring(6));
-        Integer month=month=Integer.valueOf(bDay.substring(3,5));
+        Integer month=Integer.valueOf(bDay.substring(3,5));
         Integer day=Integer.valueOf(bDay.substring(0,2));
         LocalDate bday=LocalDate.of(year,month,day);
 
         return (short)ChronoUnit.YEARS.between(bday,now);
     }
+
 }
