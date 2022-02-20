@@ -2,13 +2,24 @@ package bgu.spl.net.impl.habetnikim;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import bgu.spl.net.api.bidi.Connections;
 import bgu.spl.net.srv.ConnectionHandler;
 
 public class ConnectionsImpl<T> implements Connections<T> {
-    ConcurrentHashMap<Integer, ConnectionHandler> clientsHandlers=new ConcurrentHashMap<Integer,ConnectionHandler>();
+    ConcurrentHashMap<Integer, ConnectionHandler> clientsHandlers=new ConcurrentHashMap<Integer,ConnectionHandler>(); //for active client *may not be online
     ConcurrentLinkedQueue<Betnik> users = new ConcurrentLinkedQueue<Betnik>();
+    private static ConnectionsImpl me = null;
+    private static AtomicInteger clientId = new AtomicInteger(0);
 
+    private ConnectionsImpl(){}
+
+    public static ConnectionsImpl getInstance(){
+        if(me==null)
+            me=new ConnectionsImpl();
+        return me;
+    }
 
     @Override
     public boolean send(int connectionId, T msg) {
@@ -20,7 +31,7 @@ public class ConnectionsImpl<T> implements Connections<T> {
     }
 
     @Override
-    public void broadcast(T msg) {
+    public void broadcast(T msg) { //should send also to clients that has not logged in
         for(Integer id: clientsHandlers.keySet()){
             clientsHandlers.get(id).send(msg);
         }
@@ -36,6 +47,11 @@ public class ConnectionsImpl<T> implements Connections<T> {
     {
         users.add(u);
     }
+
+    public void addHandelr(ConnectionHandler handler){
+        clientsHandlers.put(clientId.getAndIncrement(),handler);
+    }
+
 
     public ConcurrentLinkedQueue<Betnik> getUsers() {
         return users;

@@ -3,6 +3,7 @@ package bgu.spl.net.srv;
 import bgu.spl.net.api.MessageEncoderDecoder;
 import bgu.spl.net.api.MessagingProtocol;
 import bgu.spl.net.api.bidi.BidiMessagingProtocol;
+import bgu.spl.net.impl.habetnikim.ConnectionsImpl;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -43,7 +44,9 @@ public abstract class BaseServer<T> implements Server<T> {
                         clientSock,
                         encdecFactory.get(),
                         protocolFactory.get());
-
+                //should add to connections hashmap?***
+                ConnectionsImpl.getInstance().addHandelr(handler);
+                //*****
                 execute(handler);
             }
         } catch (IOException ex) {
@@ -58,6 +61,20 @@ public abstract class BaseServer<T> implements Server<T> {
 			sock.close();
     }
 
-    protected abstract void execute(BlockingConnectionHandler<T>  handler);
+    protected abstract void execute(BlockingConnectionHandler<T>  handler)/*{new Thread(handler).start(); }*/;
+
+    public static <T> BaseServer<T>  threadPerClient(
+            int port,
+            Supplier<BidiMessagingProtocol<T>> protocolFactory,
+            Supplier<MessageEncoderDecoder<T> > encoderDecoderFactory) {
+
+        return new BaseServer<T>(port, protocolFactory, encoderDecoderFactory) {
+            @Override
+            protected void execute(BlockingConnectionHandler<T>  handler) {
+                System.out.println("Client connect");
+                new Thread(handler).start();
+            }
+        };
+    }
 
 }

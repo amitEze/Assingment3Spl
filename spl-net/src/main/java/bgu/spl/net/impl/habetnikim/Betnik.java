@@ -29,9 +29,9 @@ public class Betnik {
         this.bDay=bDay;
     }
 
-    public void login(ConnectionHandler ch){
-        cHandler=ch;
-    }
+//    public void login(ConnectionHandler ch){
+//        cHandler=ch;
+//    }
 
     public String getUserName(){return userName;}
 

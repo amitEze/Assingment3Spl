@@ -18,7 +18,7 @@ public class NonBlockingConnectionHandler<T> implements ConnectionHandler<T> {
 
     private final BidiMessagingProtocol<T> protocol;
     private final MessageEncoderDecoder<T> encdec;
-    private final Queue<ByteBuffer> writeQueue = new ConcurrentLinkedQueue<>();
+    private final Queue<ByteBuffer> writeQueue = new ConcurrentLinkedQueue<>(); //contains answers from protocol
     private final SocketChannel chan;
     private final Reactor reactor;
 
@@ -33,6 +33,10 @@ public class NonBlockingConnectionHandler<T> implements ConnectionHandler<T> {
         this.reactor = reactor;
     }
 
+    /*
+        1. reading from channel (IO thread)
+        2. creating lambda (takes buffer and send him to ActorThreadPool)
+     */
     public Runnable continueRead() {
         ByteBuffer buf = leaseBuffer();
 
@@ -51,7 +55,12 @@ public class NonBlockingConnectionHandler<T> implements ConnectionHandler<T> {
                         T nextMessage = encdec.decodeNextByte(buf.get());
                         if (nextMessage != null) {
                             protocol.process(nextMessage);
-
+                            /*
+                                the protocol will send the answer with send method (connections.send)
+                             */
+//                            if(protocol.shouldTerminate()){
+//
+//                            }
                         }
                     }
                 } finally {

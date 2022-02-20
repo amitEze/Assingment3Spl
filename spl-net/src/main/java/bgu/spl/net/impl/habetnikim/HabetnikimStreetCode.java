@@ -22,7 +22,7 @@ public class HabetnikimStreetCode implements MessageEncoderDecoder<String> {
     }
 
     @Override
-    public byte[] encode(String message) {
+    public byte[] encode(String message) { /////*******************
         String opCode="";
         int pos=0;
         for(int i=0;i<message.length();i++){
@@ -33,12 +33,12 @@ public class HabetnikimStreetCode implements MessageEncoderDecoder<String> {
             }
         }
         byte[] bOpCode=shortToBytes(Short.valueOf(opCode));
-        byte[] msg=(message.substring(pos).getBytes(StandardCharsets.UTF_8));//assuming message has \0 in right places
+        byte[] msg=(message.substring(pos+1).getBytes(StandardCharsets.UTF_8));//assuming message has \0 in right places
         byte[]encodedMsg=new byte[bOpCode.length+msg.length];
         for(int i=0;i<encodedMsg.length;i++){
             if(i<bOpCode.length)
                 encodedMsg[i]=bOpCode[i];
-            else encodedMsg[i]=msg[i-2];
+            else encodedMsg[i]=msg[i-2]; // -2? maybe we should change that
         }
         return encodedMsg;
     }
