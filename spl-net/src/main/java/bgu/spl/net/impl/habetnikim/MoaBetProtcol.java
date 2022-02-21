@@ -111,13 +111,13 @@ public class MoaBetProtcol implements BidiMessagingProtocol {
                                 isFollowed=true;
                             }
                         }
-                        if(!isFollowed && !userMe.getBlockedBy().contains(ushiya)) { //not following yet and not blocked by
+                        if(!isFollowed && !userMe.getBlockedBy().contains(ushiya) && !ushiya.getBlockedBy().contains(userMe)) { //not following yet and not blocked by
                             //actualy follow
                             userMe.getFollowing().add(ushiya);
                             ushiya.getFollowers().add(userMe);
                             ack=ack+toFollow+'\0';
                             betShlita.send(clientId,ack);
-                        } else { //userme already following this user or blocked by him
+                        } else { //userme already following this user or blocked by him or blocked him
                             betShlita.send(clientId,error);
                         }
                     }//following user isn't online or there's no ushiya user registered
@@ -240,7 +240,7 @@ public class MoaBetProtcol implements BidiMessagingProtocol {
                     LinkedList<String> loggedStats = new LinkedList<String>();
                     ConcurrentLinkedQueue<Betnik> blockedBy = userMe.getBlockedBy();
                     for(Betnik b: loggedInUsers){
-                        if(!blockedBy.contains(b)){
+                        if(!blockedBy.contains(b) && !b.getBlockedBy().contains(userMe)){
                             String bStat = "";
                             bStat = bStat+b.getAge();
                             bStat = " " + bStat + shorToString((short) b.getPosts().size());
