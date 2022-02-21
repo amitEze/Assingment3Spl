@@ -5,7 +5,7 @@ import bgu.spl.net.impl.habetnikim.MoaBetProtcol;
 import bgu.spl.net.srv.BaseServer;
 
 public class TPCMain {
-    public static void Main(String[] args){
+    public static void main(String[] args){
         BaseServer<String> bserver = BaseServer.threadPerClient(
                 Integer.decode(args[0]).intValue(),
                 ()-> new MoaBetProtcol(),

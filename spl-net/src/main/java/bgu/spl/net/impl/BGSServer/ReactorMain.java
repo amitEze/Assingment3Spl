@@ -6,7 +6,7 @@ import bgu.spl.net.srv.Reactor;
 
 
 public class ReactorMain {
-    public static void Main(String[] args){
+    public static void main(String[] args){
         if(args.length < 2){
             System.out.println("please enter port and num of threads");
         }
